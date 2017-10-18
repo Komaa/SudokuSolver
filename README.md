@@ -3,11 +3,19 @@
 
 # Question 1 (Naked Twins)
 Q: How do we use constraint propagation to solve the naked twins problem?  
-A: *Student should provide answer here*
+A: In order to solve the naked twins problem we apply a constrain to the values of the peers in the same unit as the
+twins. Since these value are already assign to one of the twin, they cannot be assigned to the peers in the same unit,
+so we remove these value from the peers. In the general case, this is a permutation problem: if we can find a unit with
+a permutation that is restricted to the same number of boxes, then we can apply a filter rule that generalize the naked
+twins strategy. So, it is possible to optimise also "dressed" twins, trios ("dressed" or naked) and so on. I did not
+implement it for lack of time, I will try to do so in the following days.
+
 
 # Question 2 (Diagonal Sudoku)
 Q: How do we use constraint propagation to solve the diagonal sudoku problem?  
-A: *Student should provide answer here*
+A: In order to solve the diagonal sudoku problem we add the constrain that every element on the two principal diagonals
+of the sudoku must be unique. In order to do so, we add the diagonal units to the row, column and square units and we
+use them to apply the elimination and only choice strategies accordingly to the diagonal sudoku problem.
 
 ### Install
 

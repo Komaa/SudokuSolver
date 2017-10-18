@@ -30,11 +30,15 @@ def naked_twins(values):
     # Find all instances of naked twins
     # Eliminate the naked twins as possibilities for their peers
     for box in values:
+        # candidate naked twin
         if len(values[box]) == 2:
+            # search in each unit for possible twin
             for unit in units[box]:
                 for comparing_box in unit:
                     if comparing_box != box and values[box] == values[comparing_box]:
+                        # found a twin
                         # print("naked twins", values[box], box, values[comparing_box], comparing_box)
+                        # remove twins values from peers in same unit
                         for value in values[box]:
                             for box_to_filter in unit:
                                 if box_to_filter != comparing_box and box_to_filter != box:
@@ -44,16 +48,18 @@ def naked_twins(values):
 
 
 def cross(a, b):
-    "Cross product of elements in A and elements in B."
+    """Cross product of elements in A and elements in B."""
     return [s + t for s in a for t in b]
 
 
 boxes = cross(rows, cols)
 row_units = [cross(r, cols) for r in rows]
 column_units = [cross(rows, c) for c in cols]
+# calculating diagonal units in order to add the diagonal sudoku constrain
 diagonal_units = [[column_units[i][i] for i in range(len(column_units))],
                   [column_units[len(column_units) - 1 - i][i] for i in range(len(column_units) - 1, -1, -1)]]
 square_units = [cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')]
+# adding the diagonal units to the unitlist
 unitlist = row_units + column_units + square_units + diagonal_units
 units = dict((s, [u for u in unitlist if s in u]) for s in boxes)
 peers = dict((s, set(sum(units[s], [])) - set([s])) for s in boxes)
@@ -95,26 +101,28 @@ def display(values):
 def eliminate(values):
     for box in values:
         if len(values[box]) == 1:
+            # if box has a value remove that value from all his peers
             for peer in peers[box]:
                 assign_value(values, peer, values[peer].replace(values[box], ""))
-                # values[peer] = values[peer].replace(values[box], "")
     return values
 
 
 def only_choice(values):
     for box in values:
+        # if box has more possible values filter them by the only choice constrain
         if len(values[box]) > 1:
-            for possib in values[box]:
-                for unit in units[box]:
-                    unique = True
-                    for peer in peers[box]:
-                        if peer != box and possib in values[peer]:
-                            unique = False
-                            break
-                    if unique:
-                        assign_value(values, box, possib)
-                        # values[box] = possib
+            for possible_value in values[box]:
+                # for each possible value, if that value is unique among the box's peers, assign that value to the box
+                unique = True
+                for peer in peers[box]:
+                    if peer != box and possible_value in values[peer]:
+                        unique = False
+                        # already discover that the value is not unique, break to save iterations
                         break
+                if unique:
+                    assign_value(values, box, possible_value)
+                    # already found the unique value, skip checking the other values to save iterations
+                    break
     return values
 
 
@@ -124,16 +132,13 @@ def reduce_puzzle(values):
         # Check how many boxes have a determined value
         solved_values_before = len([box for box in values.keys() if len(values[box]) == 1])
 
-        # Your code here: Use the Eliminate Strategy
+        # Eliminate Strategy
         eliminate(values)
-        # Your code here: Use the Only Choice Strategy
+        # Only Choice Strategy
         only_choice(values)
-        # display(values)
-        # print("before-------------")
+        # Naked twins strategy
         naked_twins(values)
 
-        # display(values)
-        # print("after-------------")
         # Check how many boxes have a determined value, to compare
         solved_values_after = len([box for box in values.keys() if len(values[box]) == 1])
         # If no new values were added, stop the loop.
@@ -145,27 +150,34 @@ def reduce_puzzle(values):
 
 
 def search(values):
+    # Try to find a solution
     solution = reduce_puzzle(values)
+    # if solution is False there is a box with zero available values
     if not solution:
         return False
+
+    # otherwise check if the sudoku is solved or just stalled
     solved = True
     for box in values:
         if len(values[box]) > 1:
             solved = False
     if solved:
+        # if it is solved return the solved sudoku, otherwise make guess on value and try to solve it
         return solution
 
-    min = 10
+    # searching for the box with minimum amount of possible values but not determined value
+    min_value = 10
     for box in values:
-        if len(values[box]) < min and len(values[box]) > 1:
-            min = len(values[box])
+        if min_value > len(values[box]) > 1:
+            min_value = len(values[box])
             c_box = box
 
+    # for that box try to assign a value to it and solve the sudoku
     for i in values[c_box]:
         candidate = dict(values)
         assign_value(candidate, c_box, i)
-        # candidate[c_box] = i
         solution = search(candidate)
+        # if it is a solution return it, otherwise try with other values
         if solution:
             return solution
 
