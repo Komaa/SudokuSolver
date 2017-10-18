@@ -1,5 +1,4 @@
-# Artificial Intelligence Nanodegree
-## Introductory Project: Diagonal Sudoku Solver
+# Diagonal Sudoku Solver
 The skeleton for this project has been forked from https://github.com/udacity/aind-sudoku
 ### Install
 
